@@ -2,9 +2,14 @@ from flask import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+URI=os.getenv('URI')
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://a1:password@localhost/a1_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = URI
 db = SQLAlchemy(app)
 # login_manager = LoginManager(app)
 # login_manager.login_view = 'login'
