@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}
+View Page
+{% endblock %}
+{% block content %}
+<video controls>
+    <source src="{{ url_for('get', id=id)}}" type="mp4">
+</video>
+<h3>{{ name }}</h3>
+{% endblock %}
