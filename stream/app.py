@@ -26,5 +26,10 @@ def view(id):
     send = send_file(upload.path, mimetype='video/mp4')
     return send
 
+@app.route('/videos')
+def videos():
+    vids = Upload.query.all()
+    return render_template('videos.html', videos=vids)
+
 if __name__=='__main__':
     app.run(port=5100,debug=True)

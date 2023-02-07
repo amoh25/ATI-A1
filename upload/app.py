@@ -1,6 +1,5 @@
 from flask import *
 from flask_sqlalchemy import SQLAlchemy
-import io
 import requests
 import os
 from dotenv import load_dotenv
@@ -8,16 +7,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 URI=os.getenv('URI')
+auth=False
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = URI
+app.config['AUTH'] = False
 db = SQLAlchemy(app)
+
 
 class Upload(db.Model):
     __tablename__ = 'upload'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    data = db.Column(db.LargeBinary(4294967295))
+    path = db.Column(db.String(200))
 
 with app.app_context():
     db.create_all()
@@ -32,33 +34,30 @@ def login():
         payload = {'username': username, 'password': password}
         res = requests.post('http://127.0.0.1:5000', data=payload)
         if res.status_code == 200:
+            app.config['AUTH'] = True
             return redirect(url_for('upload_file'))
         else:
+            app.config['AUTH'] = False
             return redirect(url_for('login'))
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'GET':
-        return render_template('upload.html')
+        if app.config['AUTH']:
+            return render_template('upload.html')
+        else:
+            return redirect(url_for('login'))
     if request.method == 'POST':
         file = request.files['file']
         name = file.filename
-        data = file.read()
-        upload = Upload(name=name, data=data)
+        if not os.path.exists('videos'):
+            os.mkdir('videos')
+        path = os.path.abspath(f'videos/{name}')
+        save = file.save(path)
+        upload = Upload(name=name, path=path)
         db.session.add(upload)
         db.session.commit()
-        return redirect(url_for('upload'))
-
-@app.route('/get/<id>')
-def get(id):
-    upload = Upload.query.get(id)
-    send = send_file(io.BytesIO(upload.data), attachment_filename=upload.name)
-    return send
-
-@app.route('/get/<id>/view')
-def view(id):
-    upload = Upload.query.get(id)
-    return Response(upload.data, content_type='video/mp4')
+        return redirect(f'http://127.0.0.1:5100/videos')
 
 
 if __name__=='__main__':

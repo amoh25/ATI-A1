@@ -11,16 +11,7 @@ URI=os.getenv('URI')
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = URI
 db = SQLAlchemy(app)
-# login_manager = LoginManager(app)
-# login_manager.login_view = 'login'
 
-# @login_manager.user_loader
-# def load_user(user_id):
-#     try:
-#         user = Users.query.filter_by(id=user_id).one()
-#         return user
-#     except:
-#         return None
 
 class Users(db.Model, UserMixin):
     __tablename__ = "users"
